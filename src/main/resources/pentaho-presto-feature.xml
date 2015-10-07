@@ -1,0 +1,7 @@
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.0.0">
+
+  <feature name="pentaho-presto" version="1.0">
+    <bundle>mvn:org.pentaho.community/pentaho-presto/1.0-SNAPSHOT</bundle>
+  </feature>
+
+</features>

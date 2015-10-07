@@ -1,5 +1,24 @@
-package org.pentaho.di.plugins.database;
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.pentaho.community.di.plugins.database.presto;
 
+import org.pentaho.community.di.plugins.database.presto.delegate.DelegateDriver;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.database.BaseDatabaseMeta;
 import org.pentaho.di.core.database.DatabaseInterface;
@@ -7,40 +26,63 @@ import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.plugins.DatabaseMetaPlugin;
 import org.pentaho.di.core.row.ValueMetaInterface;
 
-@DatabaseMetaPlugin(type = "presto", typeDescription = "Facebook Presto")
+@DatabaseMetaPlugin( type = "presto", typeDescription = "Presto" )
 public class PrestoDatabaseMeta extends BaseDatabaseMeta implements DatabaseInterface {
-  
+
+  public static final String SCHEME = "presto";
+
+  public static final int DEFAULT_PORT = 8080;
+
   @Override
   public int[] getAccessTypeList() {
-    return new int[] { DatabaseMeta.TYPE_ACCESS_NATIVE, DatabaseMeta.TYPE_ACCESS_JNDI };
+    return new int[]{ DatabaseMeta.TYPE_ACCESS_NATIVE, DatabaseMeta.TYPE_ACCESS_JNDI };
   }
 
   @Override
   public int getDefaultDatabasePort() {
-    return -1;
+    return DEFAULT_PORT;
   }
 
   @Override
   public String getDriverClass() {
-    return "org.pentaho.di.plugins.database.PrestoProxyDriver";
-    
+    return DelegateDriver.class.getCanonicalName();
+
   }
 
   @Override
   public String getURL( String hostname, String port, String databaseName ) {
-    return "jdbc:presto://"+hostname+((port!= null) ? ":"+port : "") + "/" + databaseName;
-    
+    return new StringBuilder( "jdbc:" )
+      .append( SCHEME )
+      .append( "://" )
+      .append( hostname )
+      .append( ":" )
+      .append( port )
+      .append( "/" )
+      .append( databaseName ).toString();
+
   }
 
   @Override
-  public String getAddColumnStatement( String arg0, ValueMetaInterface arg1, String arg2, boolean arg3, String arg4,
-      boolean arg5 ) {
+  public String getAddColumnStatement( String s, ValueMetaInterface valueMetaInterface, String s1, boolean b, String s2, boolean b1 ) {
+    // TODO
     return null;
   }
 
   @Override
+  public String getModifyColumnStatement( String s, ValueMetaInterface valueMetaInterface, String s1, boolean b, String s2, boolean b1 ) {
+    // TODO
+    return null;
+  }
+
+  @Override
+  public String[] getUsedLibraries() {
+    return new String[0];
+  }
+
+  @Override
   public String getFieldDefinition( ValueMetaInterface v, String tk, String pk, boolean use_autoinc,
-      boolean add_fieldname, boolean add_cr ) {
+                                    boolean add_fieldname, boolean add_cr ) {
+    // TODO override for your types
     String retval = "";
 
     String fieldname = v.getName();
@@ -67,8 +109,8 @@ public class PrestoDatabaseMeta extends BaseDatabaseMeta implements DatabaseInte
       case ValueMetaInterface.TYPE_INTEGER:
       case ValueMetaInterface.TYPE_BIGNUMBER:
         if ( fieldname.equalsIgnoreCase( tk ) || // Technical key
-            fieldname.equalsIgnoreCase( pk ) // Primary key
-        ) {
+          fieldname.equalsIgnoreCase( pk ) // Primary key
+          ) {
           retval += "BIGSERIAL";
         } else {
           if ( length > 0 ) {
@@ -112,13 +154,7 @@ public class PrestoDatabaseMeta extends BaseDatabaseMeta implements DatabaseInte
   }
 
   @Override
-  public String getModifyColumnStatement( String arg0, ValueMetaInterface arg1, String arg2, boolean arg3, String arg4,
-      boolean arg5 ) {
-    return null;
-  }
-
-  @Override
-  public String[] getUsedLibraries() {
-    return null;
+  public boolean supportsSchemas() {
+    return true;
   }
 }
